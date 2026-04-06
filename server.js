@@ -13,11 +13,27 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Middleware (must come first)
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'http://localhost:5174',
+  'https://hospital-client-demo.vercel.app' // <- Add your deployed frontend
+];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin like Postman
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy: Origin ${origin} not allowed`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
+
+// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -43,7 +59,7 @@ app.use('/api/health-packages', healthPackageRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ error: err.message || 'Something went wrong!' });
 });
 
 // 404 handler (last)
