@@ -13,6 +13,10 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Backend is running successfully!' });
+});
+
 // Connect to database
 connectDB();
 
