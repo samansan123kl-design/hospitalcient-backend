@@ -13,14 +13,7 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Backend is running successfully!' });
-});
-
-// Connect to database
-connectDB();
-
-// Middleware
+// Middleware (must come first)
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true
@@ -28,17 +21,24 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Connect to database
+connectDB();
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'Backend is running successfully!' });
+});
+
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running' });
 });
 
-// Routes
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/health-packages', healthPackageRoutes);
-// app.use('/api/users', userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -46,7 +46,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// 404 handler
+// 404 handler (last)
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
